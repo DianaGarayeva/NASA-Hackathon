@@ -4,17 +4,45 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    public float mouseSensitivity = 2f;   
+    public float minPitch = -85f;         
+    public float maxPitch = 85f;
+    public Transform playerBody;
+    private float pitch = 0f;
     [SerializeField] private float moveSpeed = 3f;
+
+    private void Start()
+    {
+        transform.position = new Vector3(0, 1, 0);
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
 
     private void Update()
     {
-        float x = Input.GetAxisRaw("Horizontal");   // A и D
-        float z = Input.GetAxisRaw("Vertical");     // W и S
+        float x = Input.GetAxis("Horizontal");   // A и D
+        float z = Input.GetAxis("Vertical");     // W и S
 
-        Vector3 direction = new Vector3(x, 0f, z);
-        direction = Vector3.ClampMagnitude(direction, 1f);   // по диагонали не быстрее
+        transform.Translate(new Vector3(x,0,z) * moveSpeed * Time.deltaTime);
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+        if (Input.GetMouseButtonDown(0) && Cursor.lockState != CursorLockMode.Locked)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
 
-        transform.Translate(direction * moveSpeed * Time.deltaTime, Space.World);
+        if (Cursor.lockState != CursorLockMode.Locked) return;
+
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
+        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
+
+        pitch -= mouseY;
+        pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
+        playerBody.Rotate(Vector3.up * mouseX);
     }
 }
 
